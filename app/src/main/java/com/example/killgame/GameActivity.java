@@ -15,18 +15,29 @@ import android.widget.TextView;
 
 import java.util.Random;
 
+/**
+ * The GameActivity class implements the gameplay logic for the KillGame app.
+ * It extends the AppCompatActivity class and manages the creation and deletion
+ * of bat and explosion objects, as well as updates the score and round number.
+ */
 public class GameActivity extends AppCompatActivity {
     TextView score, round;
     Random randomizer;
     FrameLayout gamefield;
     boolean killed = false;
-    int batnumber, points, roundnumber, batmissed, highscore;
+    int batnumber, points, roundnumber = 1, batmissed, highscore;
     float cm;
     Handler createHandler = new Handler();
     Handler deleteHandler = new Handler();
     boolean isRoundIncreased = false;
     long creationTime = 100;
 
+    /**
+     * Called when the activity is first created. Initializes the randomizer, density,
+     * gamefield, and score and round TextViews, and hides the action bar.
+     *
+     * @param savedInstanceState The saved instance state of the activity.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,18 +51,27 @@ public class GameActivity extends AppCompatActivity {
         getSupportActionBar().hide();
     }
 
+    /**
+     * Called when the activity is resumed. Starts the task for creating bats.
+     */
     @Override
     protected void onResume() {
         super.onResume();
         startCreateBatTask();
     }
 
+    /**
+     * Called when the activity is paused. Stops the task for creating bats.
+     */
     @Override
     protected void onPause() {
         super.onPause();
         stopCreateBatTask();
     }
 
+    /**
+     * Starts the task for creating bats.
+     */
     private void startCreateBatTask() {
         createHandler.postDelayed(new Runnable() {
             @Override
@@ -62,10 +82,19 @@ public class GameActivity extends AppCompatActivity {
         }, creationTime*10);
     }
 
+    /**
+     * Stops the task for creating bats.
+     */
     private void stopCreateBatTask() {
         createHandler.removeCallbacksAndMessages(null);
     }
 
+    /**
+     * Creates a bat object and adds it to the gamefield. Also updates the round number
+     * if necessary, and starts the task for deleting the bat after a set amount of time.
+     *
+     * @param v The View object to add the bat to.
+     */
     public void createBat(View v){
         BatLoader bat = new BatLoader(this);
         bat.setOnClickListener(this::killBat);
@@ -82,9 +111,14 @@ public class GameActivity extends AppCompatActivity {
         params.gravity = Gravity.TOP+Gravity.LEFT;
         gamefield.addView(bat, params);
 
+        /*
+         * Updates the round number and creation time based on the current bat number.
+         * If bat number is 0, isRoundIncreased is set to false. If bat number is a multiple
+         * of 10 and isRoundIncreased is false, round number is increased by 1 and creation
+         * time is decreased by 1. If neither condition is met, isRoundIncreased is set to false.
+         */
         if (batnumber == 0){
             isRoundIncreased = false;
-            roundnumber = 1;
         }
         else if (batnumber % 10 == 0 && !isRoundIncreased){
             roundnumber++;
@@ -94,7 +128,9 @@ public class GameActivity extends AppCompatActivity {
         } else {
             isRoundIncreased = false;
         }
-
+        /*
+         * Deletes the bat after 1.7 seconds if it has not been killed.
+         */
         deleteHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -105,6 +141,10 @@ public class GameActivity extends AppCompatActivity {
             }
         }, 1700); // lösche die Fledermaus nach 1,7 Sekunden
 
+        /*
+         * If batmissed is greater than or equal to 10, stops the createBatTask, sets the
+         * highscore, and returns to the MainActivity with the highscore as an extra.
+         */
         if (batmissed >= 10){
             stopCreateBatTask();
             highscore = batnumber*10;
@@ -115,6 +155,12 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Called when a bat object is clicked. Updates the score, creates an explosion object,
+     * and removes the bat object from the gamefield.
+     *
+     * @param v The View object that was clicked.
+     */
     private void killBat(View v){
         batnumber++;
         setExplosion(v);
@@ -123,6 +169,11 @@ public class GameActivity extends AppCompatActivity {
         killed=true;
     }
 
+    /**
+     * Creates an explosion object at the location of a killed bat and adds it to the gamefield.
+     *
+     * @param v The View object representing the killed bat.
+     */
     public void setExplosion(View v){
         ExplosionLoader explosionLoader = new ExplosionLoader(this);
         explosionLoader.setBackgroundResource(R.drawable.explostionloader);
