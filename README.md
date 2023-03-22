@@ -1,4 +1,4 @@
-# KillGame
+# Smash The Bat
 
 KillGame is a simple Android game where you have to kill bats by touching them on the screen. Each bat you kill earns you 10 points. If you miss 10 bats, the game ends and your score is shown. The game also has rounds, and the bats appear faster as you progress to higher rounds.
 
