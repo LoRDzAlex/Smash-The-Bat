@@ -12,35 +12,70 @@
         android:src="@drawable/dongeon_background"
         android:scaleType="centerCrop"/>
 
+    <TextView
+        android:id="@+id/score"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10sp"
+        android:textSize="20sp"
+        android:text="Score: "
+        android:shadowColor="@color/black"
+        android:shadowRadius="@integer/material_motion_duration_short_1"
+        android:textColor="@color/white"
+        android:fontFamily="@font/pixelfamily"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_alignParentBottom="true">
+
+
+        <TextView
+            android:id="@+id/missed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10sp"
+            android:fontFamily="@font/pixelfamily"
+            android:shadowColor="@color/black"
+            android:shadowRadius="@integer/material_motion_duration_short_1"
+            android:text="Missed: "
+            android:textColor="@color/white"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/round"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/pixelfamily"
+            android:shadowColor="@color/black"
+            android:shadowRadius="@integer/material_motion_duration_short_1"
+            android:text="Round: "
+            android:textColor="@color/white"
+            android:textSize="20sp" />
+    </LinearLayout>
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/gamefield"
-        />
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/pixelfamily"
-        android:text="Score: "
-        android:shadowColor="@color/black"
-        android:shadowRadius="@integer/material_motion_duration_short_1"
-        android:textSize="20sp"
-        android:textColor="@color/white"
-        android:id="@+id/score"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="25sp"/>
+        android:layout_marginBottom="65sp"
+        android:layout_marginTop="65sp"
+        >
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/pixelfamily"
-        android:id="@+id/round"
-        android:shadowColor="@color/black"
-        android:shadowRadius="@integer/material_motion_duration_short_1"
-        android:text="Round: "
-        android:textColor="@color/white"
-        android:textSize="20sp"
-        android:layout_alignParentBottom="true"/>
+        <TextView
+            android:id="@+id/gameover"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/pixelfamily"
+            android:shadowColor="@color/black"
+            android:layout_gravity="center"
+            android:textAlignment="center"
+            android:shadowRadius="@integer/material_motion_duration_short_1"
+            android:text="GAME OVER"
+            android:textColor="@color/white"
+            android:textSize="60sp" />
+    </FrameLayout>
 
 
 </RelativeLayout>

@@ -3,6 +3,7 @@ package com.example.killgame;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.telephony.BarringInfo;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.util.Log;
 
 import java.util.Random;
 
@@ -21,16 +23,20 @@ import java.util.Random;
  * of bat and explosion objects, as well as updates the score and round number.
  */
 public class GameActivity extends AppCompatActivity {
-    TextView score, round;
+    TextView score, round, missed, gameover;
     Random randomizer;
     FrameLayout gamefield;
-    boolean killed = false;
-    int batnumber, points, roundnumber = 1, batmissed, highscore;
+
+    boolean finished = false;
+    int batnumber, batkilled, points, roundnumber = 1, batmissed = 0, highscore;
     float cm;
     Handler createHandler = new Handler();
     Handler deleteHandler = new Handler();
+    Handler gameoverHandler = new Handler();
     boolean isRoundIncreased = false;
     long creationTime = 100;
+
+    public static final String LOGTAG = "GameActivity";
 
     /**
      * Called when the activity is first created. Initializes the randomizer, density,
@@ -48,7 +54,11 @@ public class GameActivity extends AppCompatActivity {
         gamefield = findViewById(R.id.gamefield);
         score = findViewById(R.id.score);
         round = findViewById(R.id.round);
+        missed = findViewById(R.id.missed);
+        gameover = findViewById(R.id.gameover);
+        gameover.setVisibility(View.INVISIBLE);
         getSupportActionBar().hide();
+        Log.d(LOGTAG, "onCreate() called");
     }
 
     /**
@@ -76,8 +86,13 @@ public class GameActivity extends AppCompatActivity {
         createHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                createBat(gamefield);
-                createHandler.postDelayed(this, creationTime*10);
+                if (!finished){
+                    createBat(gamefield);
+                    createHandler.postDelayed(this, creationTime * 10);
+            }
+                else{
+                    createHandler.removeCallbacksAndMessages(null);
+                }
             }
         }, creationTime*10);
     }
@@ -86,7 +101,9 @@ public class GameActivity extends AppCompatActivity {
      * Stops the task for creating bats.
      */
     private void stopCreateBatTask() {
+        finished = true;
         createHandler.removeCallbacksAndMessages(null);
+        deleteHandler.removeCallbacksAndMessages(null);
     }
 
     /**
@@ -98,6 +115,7 @@ public class GameActivity extends AppCompatActivity {
     public void createBat(View v){
         BatLoader bat = new BatLoader(this);
         bat.setOnClickListener(this::killBat);
+        batnumber++;
         int width = gamefield.getWidth();
         int height = gamefield.getHeight();
         int bat_width = Math.round(cm * 75);
@@ -111,16 +129,18 @@ public class GameActivity extends AppCompatActivity {
         params.gravity = Gravity.TOP+Gravity.LEFT;
         gamefield.addView(bat, params);
 
+
         /*
          * Updates the round number and creation time based on the current bat number.
          * If bat number is 0, isRoundIncreased is set to false. If bat number is a multiple
          * of 10 and isRoundIncreased is false, round number is increased by 1 and creation
          * time is decreased by 1. If neither condition is met, isRoundIncreased is set to false.
          */
-        if (batnumber == 0){
+        if (batkilled == 0){
             isRoundIncreased = false;
+            round.setText("Round: "+ roundnumber);
         }
-        else if (batnumber % 10 == 0 && !isRoundIncreased){
+        else if (batkilled % 10 == 0 && !isRoundIncreased){
             roundnumber++;
             round.setText("Round: "+ roundnumber);
             isRoundIncreased = true;
@@ -129,30 +149,37 @@ public class GameActivity extends AppCompatActivity {
             isRoundIncreased = false;
         }
         /*
-         * Deletes the bat after 1.7 seconds if it has not been killed.
+         * Deletes the bat after 1,7 seconds if it has not been killed.
          */
-        deleteHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if(!killed){
-                    gamefield.removeView(bat);
-                    batmissed++;
-                }
-            }
-        }, 1700); // lösche die Fledermaus nach 1,7 Sekunden
+        deleteHandler.postDelayed(() -> {
+            removeBat(bat);
+            batmissed = batnumber - batkilled;
+            removeBatCounter(batmissed);
+        }, 1700);
 
         /*
          * If batmissed is greater than or equal to 10, stops the createBatTask, sets the
          * highscore, and returns to the MainActivity with the highscore as an extra.
          */
         if (batmissed >= 10){
-            stopCreateBatTask();
-            highscore = batnumber*10;
-
-            Intent intent = new Intent(GameActivity.this, MainActivity.class);
-            intent.putExtra("HighScore: ", highscore);
-            startActivity(intent);
+            setGameover();
         }
+    }
+    private void setGameover(){
+        stopCreateBatTask(); // stoppe die Erstellung von Fledermäusen
+        gameover.setVisibility(View.VISIBLE);
+        Intent intent = new Intent();
+        intent.putExtra("SCORE", batkilled*10);
+        setResult(RESULT_OK, intent);
+        gameoverHandler.postDelayed(this::finish, 5000);
+    }
+    private void removeBat(View v){
+        gamefield.removeView(v);
+    }
+
+    private void removeBatCounter(int batmissed){
+            missed.setText("Missed: " + batmissed);
+            Log.d(LOGTAG + " Bat missed: ", String.valueOf(batmissed));
     }
 
     /**
@@ -162,11 +189,10 @@ public class GameActivity extends AppCompatActivity {
      * @param v The View object that was clicked.
      */
     private void killBat(View v){
-        batnumber++;
+        batkilled++;
         setExplosion(v);
         gamefield.removeView(v);
-        score.setText("Punkte: "+ batnumber*10);
-        killed=true;
+        score.setText("Punkte: "+ batkilled*10);
     }
 
     /**

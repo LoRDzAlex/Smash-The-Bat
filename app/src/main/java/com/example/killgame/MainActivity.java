@@ -6,10 +6,21 @@ import android.content.Intent;
 import android.icu.util.Calendar;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.TextView;
+
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * The `MainActivity` class represents the main activity of the "Kill Game" Android app.
@@ -49,8 +60,8 @@ public class MainActivity extends AppCompatActivity implements Runnable{
 
         // Find the views
         TextView startGameActivity = findViewById(R.id.start_game);
-        TextView HighScore = findViewById(R.id.highscore);
 
+        /*
         // Get the high score from the intent extras
         Bundle extras = getIntent().getExtras();
         if (extras == null){
@@ -61,10 +72,10 @@ public class MainActivity extends AppCompatActivity implements Runnable{
 
         // Set the high score text view
         HighScore.setText(displayHighScore);
+        */
 
         // Create a handler for posting delayed messages (runnables)
         handy = new Handler();
-
         // Post a runnable for updating the clock
         handy.postDelayed(this,DELAY);
 
@@ -74,12 +85,22 @@ public class MainActivity extends AppCompatActivity implements Runnable{
         public void onClick(View view) {
             // Create an intent to start the GameActivity
             Intent intent = new Intent(MainActivity.this, GameActivity.class);
-            startActivity(intent);
+            startActivityForResult(intent, 1);
         }
     });
 
-
 }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+            if(resultCode == RESULT_OK){
+                int result=data.getIntExtra("SCORE",0);
+                TextView HighScore = findViewById(R.id.highscore);
+                displayHighScore = "HighScore: "+result;
+                HighScore.setText(displayHighScore);
+            }
+    }
+
 
     /**
      * Called when the runnable is executed.
